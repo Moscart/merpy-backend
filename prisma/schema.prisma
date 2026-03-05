@@ -6,95 +6,261 @@ datasource db {
   provider = "postgresql"
 }
 
-enum RoleName {
-  ADMIN
+model Companies {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  code        String    @unique
+  name        String
+  ownerId     String?   @db.Uuid
+  logoUrl     String?
+  phoneNumber String?
+  address     String?
+  websiteUrl  String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  owner Users? @relation("CompanyOwner", fields: [ownerId], references: [id])
+
+  users              Users[]              @relation("CompanyUser")
+  departments        Departments[]
+  attendances        Attendances[]
+  attendanceRequests AttendanceRequests[]
+  schedules          Schedules[]
+  specialDates       SpecialDates[]
+}
+
+enum UserRole {
+  OWNER
   HR
-  EMPLOYEE
+  MANAGER
+  STAFF
 }
 
-model Roles {
-  id    Int      @id @default(autoincrement())
-  name  RoleName @unique
-  users Users[]
-}
-
-model Offices {
-  id        Int       @id @default(autoincrement())
-  name      String
-  address   String
-  latitude  Decimal   @db.Decimal(10, 8)
-  longitude Decimal   @db.Decimal(11, 8)
-  radius    Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-  users     Users[]
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
 
 model Users {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  fullName  String
-  phone     String?
-  roleId    Int
-  officeId  Int?
+  id           String     @id @default(uuid(7)) @db.Uuid
+  companyId    String     @db.Uuid
+  officeId     String?    @db.Uuid
+  departmentId String?    @db.Uuid
+  scheduleId   String?    @db.Uuid
+  employeeCode String?
+  fullName     String
+  username     String
+  email        String
+  password     String
+  role         UserRole   @default(STAFF)
+  profileUrl   String?
+  phone        String?
+  jobTitle     String?
+  isFlexible   Boolean    @default(false)
+  status       UserStatus @default(PENDING)
+  joinedAt     DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  company    Companies    @relation("CompanyUser", fields: [companyId], references: [id])
+  office     Offices?     @relation("OfficeUser", fields: [officeId], references: [id])
+  department Departments? @relation("DepartmentUser", fields: [departmentId], references: [id])
+  schedule   Schedules?   @relation("ScheduleUser", fields: [scheduleId], references: [id])
+
+  ownedCompanies      Companies[]          @relation("CompanyOwner")
+  managedDepartments  Departments[]        @relation("DepartmentManager")
+  sessions            Sessions[]
+  attendances         Attendances[]
+  attendanceRequests  AttendanceRequests[] @relation("UserAttendanceRequests")
+  reviewedAttendances AttendanceRequests[] @relation("AttendanceRequestReviewer")
+
+  @@unique([companyId, employeeCode])
+  @@unique([companyId, username])
+  @@unique([companyId, email])
+}
+
+model Sessions {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  userId       String   @db.Uuid
+  refreshToken String
+  deviceId     String
+  userAgent    String
+  ipAddress    String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user Users @relation(fields: [userId], references: [id])
+
+  @@unique([userId, deviceId])
+}
+
+model Offices {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  companyId     String    @db.Uuid
+  picId         String?   @db.Uuid
+  name          String
+  code          String
+  address       String?
+  contactNumber String?
+  lat           Decimal   @db.Decimal(10, 8)
+  lng           Decimal   @db.Decimal(11, 8)
+  radius        Int
+  timezone      String    @default("Asia/Jakarta")
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  users              Users[]              @relation("OfficeUser")
+  attendances        Attendances[]
+  attendanceRequests AttendanceRequests[]
+
+  @@unique([companyId, code])
+}
+
+model Departments {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  companyId   String    @db.Uuid
+  code        String
+  name        String
+  description String?
+  managerId   String?   @db.Uuid
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  company Companies @relation(fields: [companyId], references: [id])
+  manager Users?    @relation("DepartmentManager", fields: [managerId], references: [id])
+
+  users Users[] @relation("DepartmentUser")
+
+  @@unique([companyId, code])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  INCOMPLETE
+  LEAVE
+  SICK
+}
+
+enum WorkMode {
+  OFFICE
+  REMOTE
+}
+
+model Attendances {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  companyId String    @db.Uuid
+  userId    String    @db.Uuid
+  officeId  String?   @db.Uuid
+  date      DateTime
+  imageUrl  String?
+  clockIn   DateTime?
+  clockOut  DateTime?
+  latIn     Decimal?  @db.Decimal(10, 8)
+  lngIn     Decimal?  @db.Decimal(11, 8)
+  latOut    Decimal?  @db.Decimal(10, 8)
+  lngOut    Decimal?  @db.Decimal(11, 8)
+  isLate    Boolean   @default(false)
+  isEarly   Boolean   @default(false)
+  status    String?
+  isManual  Boolean   @default(false)
+  workMode  String    @default("OFFICE")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  role                Roles                 @relation(fields: [roleId], references: [id])
-  office              Offices?              @relation(fields: [officeId], references: [id])
-  attendances         Attendances[]
-  attendanceApprovals AttendanceApprovals[]
+  company            Companies            @relation(fields: [companyId], references: [id])
+  user               Users                @relation(fields: [userId], references: [id])
+  office             Offices?             @relation(fields: [officeId], references: [id])
+  attendanceRequests AttendanceRequests[]
 }
 
-enum AttendanceType {
-  CLOCK_IN
-  CLOCK_OUT
-}
-
-enum AttendanceStatus {
-  WITH_RANGE
-  OUT_OF_RANGE
-  REJECTED
-  APPROVED
-}
-
-model Attendances {
-  id        Int              @id @default(autoincrement())
-  userId    Int
-  type      AttendanceType
-  timestamp DateTime         @default(now())
-  latitude  Decimal?         @db.Decimal(10, 8)
-  longitude Decimal?         @db.Decimal(11, 8)
-  status    AttendanceStatus
-  photo_url String
-  notes     String?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  deletedAt DateTime?
-
-  user                Users                 @relation(fields: [userId], references: [id])
-  attendanceApprovals AttendanceApprovals[]
-}
-
-enum AttendanceApprovalStatus {
+enum ApprovalStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
-model AttendanceApprovals {
-  id           Int                      @id @default(autoincrement())
-  attendanceId Int
-  approverId   Int
-  status       AttendanceApprovalStatus
-  reviewedAt   DateTime?
-  reviewNotes  String?
-  createdAt    DateTime                 @default(now())
-  updatedAt    DateTime                 @updatedAt
+model AttendanceRequests {
+  id                  String         @id @default(uuid(7)) @db.Uuid
+  companyId           String         @db.Uuid
+  userId              String         @db.Uuid
+  officeId            String?        @db.Uuid
+  currentAttendanceId String?        @db.Uuid
+  imageUrl            String?
+  status              ApprovalStatus @default(PENDING)
+  clockIn             DateTime?
+  clockOut            DateTime?
+  lat                 Decimal?       @db.Decimal(10, 8)
+  lng                 Decimal?       @db.Decimal(11, 8)
+  reason              String?
+  reviewedBy          String?        @db.Uuid
+  reviewedAt          DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  deletedAt           DateTime?
 
-  attendance Attendances @relation(fields: [attendanceId], references: [id])
-  approver   Users       @relation(fields: [approverId], references: [id])
+  company           Companies    @relation(fields: [companyId], references: [id])
+  user              Users        @relation("UserAttendanceRequests", fields: [userId], references: [id])
+  office            Offices?     @relation(fields: [officeId], references: [id])
+  currentAttendance Attendances? @relation(fields: [currentAttendanceId], references: [id])
+  reviewer          Users?       @relation("AttendanceRequestReviewer", fields: [reviewedBy], references: [id])
+}
+
+model Schedules {
+  id        String @id @default(uuid(7)) @db.Uuid
+  companyId String @db.Uuid
+  name      String
+
+  company Companies @relation(fields: [companyId], references: [id])
+
+  users        Users[]        @relation("ScheduleUser")
+  scheduleDays ScheduleDays[]
+  specialDates SpecialDates[]
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model ScheduleDays {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  scheduleId String    @db.Uuid
+  dayOfWeek  DayOfWeek
+  clockIn    DateTime  @db.Time()
+  clockOut   DateTime  @db.Time()
+  isOff      Boolean   @default(false)
+
+  schedule Schedules @relation(fields: [scheduleId], references: [id])
+
+  @@unique([scheduleId, dayOfWeek])
+}
+
+model SpecialDates {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  companyId  String    @db.Uuid
+  scheduleId String?   @db.Uuid
+  date       DateTime
+  name       String
+  isOff      Boolean   @default(false)
+  clockIn    DateTime? @db.Time()
+  clockOut   DateTime? @db.Time()
+
+  company  Companies  @relation(fields: [companyId], references: [id])
+  schedule Schedules? @relation(fields: [scheduleId], references: [id])
+
+  @@unique([companyId, scheduleId, date])
 }

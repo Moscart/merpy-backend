@@ -1,5 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
@@ -8,31 +9,30 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const admin = await prisma.roles.upsert({
-    where: { name: 'ADMIN' },
+  const company = await prisma.companies.upsert({
+    where: { code: 'merpy' },
     update: {},
     create: {
-      name: 'ADMIN',
+      name: 'Merpy Corporation',
+      code: 'merpy',
     },
   });
 
-  const hr = await prisma.roles.upsert({
-    where: { name: 'HR' },
+  const owner = await prisma.users.upsert({
+    where: {
+      companyId_username: { companyId: company.id, username: 'danieltheo' },
+    },
     update: {},
     create: {
-      name: 'HR',
+      email: 'danieltheo.73@gmail.com',
+      fullName: 'Daniel Theo Santoso',
+      password: await bcrypt.hash('password', 12),
+      username: 'danieltheo',
+      companyId: company.id,
     },
   });
 
-  const employee = await prisma.roles.upsert({
-    where: { name: 'EMPLOYEE' },
-    update: {},
-    create: {
-      name: 'EMPLOYEE',
-    },
-  });
-
-  console.log({ admin, hr, employee });
+  console.log({ company, owner });
 }
 
 main()
