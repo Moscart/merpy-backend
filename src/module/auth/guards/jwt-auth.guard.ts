@@ -1,11 +1,13 @@
 import {
   ExecutionContext,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
+import { ERRORS } from 'src/module/users/constants/errors';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
@@ -34,7 +36,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     user: TUser | false
   ): TUser {
     if (err || !user) {
-      throw err || new UnauthorizedException('Token is invalid or expired');
+      throw (
+        err ||
+        new UnauthorizedException({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          errorCode: Object.keys(ERRORS).find(
+            (key) => ERRORS[key] === ERRORS.INVALID_TOKEN
+          ),
+          message: ERRORS.INVALID_TOKEN,
+        })
+      );
     }
     return user;
   }

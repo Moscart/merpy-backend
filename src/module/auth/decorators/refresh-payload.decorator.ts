@@ -1,4 +1,10 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import {
+  createParamDecorator,
+  ExecutionContext,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ERRORS } from 'src/module/users/constants/errors';
 import { JwtRefreshPayload } from '../types/jwt-payload.type';
 
 export const RefreshPayload = createParamDecorator(
@@ -13,7 +19,13 @@ export const RefreshPayload = createParamDecorator(
     const payload = request.user;
 
     if (!payload) {
-      throw new Error('Payload not found in request');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.REQUEST_PAYLOAD_NOT_FOUND
+        ),
+        message: ERRORS.REQUEST_PAYLOAD_NOT_FOUND,
+      });
     }
 
     return data ? payload[data] : payload;

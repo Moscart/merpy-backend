@@ -9,30 +9,30 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const company = await prisma.companies.upsert({
-    where: { code: 'merpy' },
-    update: {},
-    create: {
-      name: 'Merpy Corporation',
-      code: 'merpy',
-    },
-  });
-
-  const owner = await prisma.users.upsert({
-    where: {
-      companyId_username: { companyId: company.id, username: 'danieltheo' },
-    },
-    update: {},
-    create: {
-      email: 'danieltheo.73@gmail.com',
+  const owner = await prisma.users.create({
+    data: {
+      company: {
+        create: {
+          name: 'Merpy Corporation',
+          code: 'merpy',
+        },
+      },
       fullName: 'Daniel Theo Santoso',
-      password: await bcrypt.hash('password', 12),
       username: 'danieltheo',
-      companyId: company.id,
+      email: 'danieltheo.73@gmail.com',
+      password: await bcrypt.hash('password', 12),
+      role: 'OWNER',
+      status: 'ACTIVE',
+      isFlexible: true,
+      ownedCompanies: {
+        connect: {
+          code: 'merpy',
+        },
+      },
     },
   });
 
-  console.log({ company, owner });
+  console.log({ owner });
 }
 
 main()

@@ -3,7 +3,6 @@ import { ROLES, USER_STATUS } from 'src/constants';
 import z from 'zod';
 
 export const CreateUserSchema = z.object({
-  companyId: z.uuidv7(),
   officeId: z.uuidv7().optional(),
   departmentId: z.uuidv7().optional(),
   scheduleId: z.uuidv7().optional(),

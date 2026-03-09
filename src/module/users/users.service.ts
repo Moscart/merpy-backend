@@ -1,4 +1,9 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/common/database/prisma.service';
@@ -30,8 +35,8 @@ export class UsersService {
     createdAt: true,
   };
 
-  async create(createUserDto: CreateUserDto) {
-    const { companyId, password, employeeCode } = createUserDto;
+  async create(companyId: string, createUserDto: CreateUserDto) {
+    const { password, employeeCode } = createUserDto;
     const email = createUserDto.email.toLowerCase();
     const username = createUserDto.username.toLowerCase();
 
@@ -44,7 +49,13 @@ export class UsersService {
     });
 
     if (isUserEmailExist) {
-      throw new HttpException(ERRORS.EMAIL_ALREADY_EXISTS, 400);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.EMAIL_ALREADY_EXISTS
+        ),
+        message: ERRORS.EMAIL_ALREADY_EXISTS,
+      });
     }
 
     const isUserUsernameExist = await this.prismaService.users.findFirst({
@@ -56,7 +67,13 @@ export class UsersService {
     });
 
     if (isUserUsernameExist) {
-      throw new HttpException(ERRORS.USERNAME_ALREADY_EXISTS, 400);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.USERNAME_ALREADY_EXISTS
+        ),
+        message: ERRORS.USERNAME_ALREADY_EXISTS,
+      });
     }
 
     if (employeeCode) {
@@ -69,7 +86,13 @@ export class UsersService {
       });
 
       if (isUserEmployeeCodeExist) {
-        throw new HttpException(ERRORS.EMPLOYEE_CODE_ALREADY_EXISTS, 400);
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          errorCode: Object.keys(ERRORS).find(
+            (key) => ERRORS[key] === ERRORS.EMPLOYEE_CODE_ALREADY_EXISTS
+          ),
+          message: ERRORS.EMPLOYEE_CODE_ALREADY_EXISTS,
+        });
       }
     }
 
@@ -78,18 +101,21 @@ export class UsersService {
     const user = await this.prismaService.users.create({
       data: {
         ...createUserDto,
+        companyId: companyId,
         email: email,
         password: hashedPassword,
         username: username,
+        status: 'ACTIVE',
       },
       select: this.defaultSelect,
     });
     return user;
   }
 
-  async findAll() {
+  async findAll(companyId: string) {
     const users = await this.prismaService.users.findMany({
       where: {
+        companyId: companyId,
         deletedAt: null,
       },
       select: this.defaultSelect,
@@ -97,24 +123,31 @@ export class UsersService {
     return users;
   }
 
-  async findOne(id: string) {
+  async findOne(companyId: string, id: string) {
     const user = await this.prismaService.users.findFirst({
-      where: { id, deletedAt: null },
+      where: { id, companyId, deletedAt: null },
       select: this.defaultSelect,
     });
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(companyId: string, id: string, updateUserDto: UpdateUserDto) {
     const getUser = await this.prismaService.users.findFirst({
       where: {
         id,
+        companyId,
         deletedAt: null,
       },
     });
 
     if (!getUser) {
-      throw new HttpException(ERRORS.USER_NOT_FOUND, 404);
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.USER_NOT_FOUND
+        ),
+        message: ERRORS.USER_NOT_FOUND,
+      });
     }
 
     if (updateUserDto.email) {
@@ -131,7 +164,13 @@ export class UsersService {
       });
 
       if (isUserEmailExist) {
-        throw new HttpException(ERRORS.EMAIL_ALREADY_EXISTS, 400);
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          errorCode: Object.keys(ERRORS).find(
+            (key) => ERRORS[key] === ERRORS.EMAIL_ALREADY_EXISTS
+          ),
+          message: ERRORS.EMAIL_ALREADY_EXISTS,
+        });
       }
     }
 
@@ -149,7 +188,13 @@ export class UsersService {
       });
 
       if (isUserUsernameExist) {
-        throw new HttpException(ERRORS.USERNAME_ALREADY_EXISTS, 400);
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          errorCode: Object.keys(ERRORS).find(
+            (key) => ERRORS[key] === ERRORS.USERNAME_ALREADY_EXISTS
+          ),
+          message: ERRORS.USERNAME_ALREADY_EXISTS,
+        });
       }
     }
 
@@ -166,7 +211,13 @@ export class UsersService {
       });
 
       if (isUserEmployeeCodeExist) {
-        throw new HttpException(ERRORS.EMPLOYEE_CODE_ALREADY_EXISTS, 400);
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          errorCode: Object.keys(ERRORS).find(
+            (key) => ERRORS[key] === ERRORS.EMPLOYEE_CODE_ALREADY_EXISTS
+          ),
+          message: ERRORS.EMPLOYEE_CODE_ALREADY_EXISTS,
+        });
       }
     }
 
@@ -185,20 +236,27 @@ export class UsersService {
     return updatedUser;
   }
 
-  async remove(id: string) {
+  async remove(companyId: string, id: string) {
     const getUser = await this.prismaService.users.findFirst({
       where: {
         id,
+        companyId,
         deletedAt: null,
       },
     });
 
     if (!getUser) {
-      throw new HttpException(ERRORS.USER_NOT_FOUND, 404);
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.USER_NOT_FOUND
+        ),
+        message: ERRORS.USER_NOT_FOUND,
+      });
     }
 
     await this.prismaService.users.update({
-      where: { id },
+      where: { id, companyId },
       data: {
         deletedAt: new Date(),
       },

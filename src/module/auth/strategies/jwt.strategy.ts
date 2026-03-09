@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { JwtConfig } from 'src/common/configs/jwt.config';
+import { ERRORS } from 'src/module/users/constants/errors';
 import { AuthenticatedUser, JwtAccessPayload } from '../types/jwt-payload.type';
 
 @Injectable()
@@ -22,7 +23,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   validate(payload: JwtAccessPayload): AuthenticatedUser {
     if (payload.type !== 'access') {
-      throw new UnauthorizedException('Invalid token type');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.INVALID_TOKEN_TYPE
+        ),
+        message: ERRORS.INVALID_TOKEN_TYPE,
+      });
     }
 
     return {

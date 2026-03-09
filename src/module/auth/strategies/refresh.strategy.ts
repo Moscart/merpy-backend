@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import * as crypto from 'crypto';
@@ -9,6 +9,7 @@ import { CacheService } from 'src/common/cache/cache.service';
 import { JwtConfig } from 'src/common/configs/jwt.config';
 import { PrismaService } from 'src/common/database/prisma.service';
 import { SessionsService } from 'src/module/sessions/sessions.service';
+import { ERRORS } from 'src/module/users/constants/errors';
 import { JwtRefreshPayload } from '../types/jwt-payload.type';
 
 @Injectable()
@@ -34,7 +35,13 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
 
   async validate(request: Request, payload: JwtRefreshPayload) {
     if (payload.type !== 'refresh') {
-      throw new UnauthorizedException('Invalid token type');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.INVALID_TOKEN_TYPE
+        ),
+        message: ERRORS.INVALID_TOKEN_TYPE,
+      });
     }
 
     const redisKey = `refresh_token:${payload.sub}:`;
@@ -55,7 +62,13 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User is inactive or deleted');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.USER_NOT_FOUND
+        ),
+        message: ERRORS.USER_NOT_FOUND,
+      });
     }
 
     const session = await this.prismaService.sessions.findFirst({
@@ -69,7 +82,13 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     });
 
     if (!session) {
-      throw new UnauthorizedException('Session not found');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.SESSION_NOT_FOUND
+        ),
+        message: ERRORS.SESSION_NOT_FOUND,
+      });
     }
 
     const compareResult = this.hashToken(refreshToken) === session.refreshToken;
@@ -79,7 +98,13 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
       await this.cacheService.deleteKeysByPattern(
         `refresh_token:${payload.sub}:*`
       );
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.INVALID_REFRESH_TOKEN
+        ),
+        message: ERRORS.INVALID_REFRESH_TOKEN,
+      });
     }
 
     await this.cacheService.set(
