@@ -10,9 +10,9 @@ import { Request } from 'express';
 import { PinoLogger } from 'nestjs-pino';
 import { CacheService } from 'src/common/cache/cache.service';
 import { PrismaService } from 'src/common/database/prisma.service';
-import { ROLES } from 'src/constants';
-import { ERRORS } from 'src/module/users/constants/errors';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import { ERRORS } from 'src/constants/errors';
+import { USER_ROLES } from 'src/module/users/constants';
+import { USER_ROLES_KEY } from '../decorators/roles.decorator';
 import { AuthenticatedUser } from '../types/jwt-payload.type';
 
 @Injectable()
@@ -26,8 +26,8 @@ export class RolesGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<
-      (typeof ROLES)[number][]
-    >(ROLES_KEY, [context.getHandler(), context.getClass()]);
+      (typeof USER_ROLES)[number][]
+    >(USER_ROLES_KEY, [context.getHandler(), context.getClass()]);
 
     if (!requiredRoles) {
       return true;

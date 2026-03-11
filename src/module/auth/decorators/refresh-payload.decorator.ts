@@ -4,7 +4,7 @@ import {
   HttpStatus,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ERRORS } from 'src/module/users/constants/errors';
+import { ERRORS } from 'src/constants/errors';
 import { JwtRefreshPayload } from '../types/jwt-payload.type';
 
 export const RefreshPayload = createParamDecorator(

@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { ROLES, USER_STATUS } from 'src/constants';
+import { USER_ROLES, USER_STATUS } from 'src/module/users/constants';
 import z from 'zod';
 
 export const CreateUserSchema = z.object({
@@ -11,7 +11,7 @@ export const CreateUserSchema = z.object({
   username: z.string().min(2).max(50),
   email: z.email(),
   password: z.string().min(8).max(100),
-  role: z.enum(ROLES).default('STAFF'),
+  role: z.enum(USER_ROLES).default('STAFF'),
   profileUrl: z.string().optional(),
   phone: z.string().min(10).max(15).optional(),
   jobTitle: z.string().min(2).max(100).optional(),

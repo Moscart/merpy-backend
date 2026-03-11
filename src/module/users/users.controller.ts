@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -14,6 +15,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import type { AuthenticatedUser } from '../auth/types/jwt-payload.type';
 import { CreateUserDto } from './dto/create-user.dto';
+import {
+  UserPaginationResponseSchema,
+  UserQueryDto,
+} from './dto/pagination.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UsersService } from './users.service';
@@ -35,9 +40,12 @@ export class UsersController {
 
   @Get()
   @Roles('OWNER', 'HR')
-  @ZodSerializerDto([UserResponseDto])
-  findAll(@CurrentUser() user: AuthenticatedUser) {
-    return this.usersService.findAll(user.companyId);
+  @ZodSerializerDto(UserPaginationResponseSchema)
+  findAll(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: UserQueryDto
+  ) {
+    return this.usersService.findAll(user.companyId, query);
   }
 
   @Get(':id')

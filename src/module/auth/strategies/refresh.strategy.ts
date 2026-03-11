@@ -8,8 +8,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { CacheService } from 'src/common/cache/cache.service';
 import { JwtConfig } from 'src/common/configs/jwt.config';
 import { PrismaService } from 'src/common/database/prisma.service';
+import { ERRORS } from 'src/constants/errors';
 import { SessionsService } from 'src/module/sessions/sessions.service';
-import { ERRORS } from 'src/module/users/constants/errors';
 import { JwtRefreshPayload } from '../types/jwt-payload.type';
 
 @Injectable()

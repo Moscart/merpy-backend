@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ERRORS } from 'src/module/users/constants/errors';
+import { ERRORS } from 'src/constants/errors';
 
 @Injectable()
 export class RefreshAuthGuard extends AuthGuard('refresh') {

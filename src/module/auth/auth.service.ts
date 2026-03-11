@@ -13,7 +13,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { CacheService } from 'src/common/cache/cache.service';
 import { JwtConfig } from 'src/common/configs/jwt.config';
 import { PrismaService } from 'src/common/database/prisma.service';
-import { ERRORS } from '../users/constants/errors';
+import { ERRORS } from '../../constants/errors';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-company.dto';
 import { JwtAccessPayload, JwtRefreshPayload } from './types/jwt-payload.type';

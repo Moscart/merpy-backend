@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
-import { ERRORS } from 'src/module/users/constants/errors';
+import { ERRORS } from 'src/constants/errors';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()

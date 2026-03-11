@@ -7,8 +7,9 @@ import {
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/common/database/prisma.service';
-import { ERRORS } from './constants/errors';
+import { ERRORS } from '../../constants/errors';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserQueryDto } from './dto/pagination.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -112,15 +113,92 @@ export class UsersService {
     return user;
   }
 
-  async findAll(companyId: string) {
-    const users = await this.prismaService.users.findMany({
-      where: {
-        companyId: companyId,
-        deletedAt: null,
+  async findAll(companyId: string, query: UserQueryDto) {
+    const { page, perPage, search, sortBy, sortOrder, role, status } = query;
+    const skip = (page - 1) * perPage;
+
+    const where: Prisma.UsersWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { employeeCode: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (role) {
+      where.role = role;
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    const activeFilters: {
+      search?: string;
+      role?: typeof role;
+      status?: typeof status;
+    } = {};
+
+    if (search) {
+      activeFilters.search = search;
+    }
+
+    if (role) {
+      activeFilters.role = role;
+    }
+
+    if (status) {
+      activeFilters.status = status;
+    }
+
+    const orderBy: Prisma.UsersOrderByWithRelationInput = {
+      [sortBy]: sortOrder,
+    };
+
+    const [users, total] = await this.prismaService.$transaction([
+      this.prismaService.users.findMany({
+        where: {
+          companyId: companyId,
+          deletedAt: null,
+          ...where,
+        },
+        select: this.defaultSelect,
+        skip: skip,
+        take: perPage,
+        orderBy: orderBy,
+      }),
+      this.prismaService.users.count({
+        where: {
+          companyId: companyId,
+          deletedAt: null,
+          ...where,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / perPage);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        perPage,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+        activeFilters,
+        activeSort: {
+          sortBy,
+          sortOrder,
+        },
       },
-      select: this.defaultSelect,
-    });
-    return users;
+    };
   }
 
   async findOne(companyId: string, id: string) {
