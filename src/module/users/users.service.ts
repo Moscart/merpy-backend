@@ -133,7 +133,6 @@ export class UsersService {
     const activeFilters: {
       search?: string;
       role?: typeof role;
-      status?: typeof status;
     } = {};
 
     if (search) {
@@ -142,10 +141,6 @@ export class UsersService {
 
     if (role) {
       activeFilters.role = role;
-    }
-
-    if (status) {
-      activeFilters.status = status;
     }
 
     const orderBy: Prisma.UsersOrderByWithRelationInput = {
