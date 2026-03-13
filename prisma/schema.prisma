@@ -37,33 +37,25 @@ enum UserRole {
   STAFF
 }
 
-enum UserStatus {
-  PENDING
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-}
-
 model Users {
-  id           String     @id @default(uuid(7)) @db.Uuid
-  companyId    String     @db.Uuid
-  officeId     String?    @db.Uuid
-  departmentId String?    @db.Uuid
-  scheduleId   String?    @db.Uuid
+  id           String    @id @default(uuid(7)) @db.Uuid
+  companyId    String    @db.Uuid
+  officeId     String?   @db.Uuid
+  departmentId String?   @db.Uuid
+  scheduleId   String?   @db.Uuid
   employeeCode String?
   fullName     String
   username     String
   email        String
   password     String
-  role         UserRole   @default(STAFF)
+  role         UserRole  @default(STAFF)
   profileUrl   String?
   phone        String?
   jobTitle     String?
-  isFlexible   Boolean    @default(false)
-  status       UserStatus @default(PENDING)
-  joinedAt     DateTime   @default(now())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  isFlexible   Boolean   @default(false)
+  joinedAt     DateTime
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
   company    Companies    @relation("CompanyUser", fields: [companyId], references: [id])

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { CommonModule } from './common/common.module';
@@ -9,7 +10,13 @@ import { SessionsModule } from './module/sessions/sessions.module';
 import { UsersModule } from './module/users/users.module';
 
 @Module({
-  imports: [CommonModule, AuthModule, SessionsModule, UsersModule],
+  imports: [
+    CommonModule,
+    AuthModule,
+    SessionsModule,
+    UsersModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [],
   providers: [
     {

@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { USER_ROLES, USER_STATUS } from 'src/module/users/constants';
+import { USER_ROLES } from 'src/module/users/constants';
 import z from 'zod';
 
 export const UserResponseSchema = z.object({
@@ -17,7 +17,6 @@ export const UserResponseSchema = z.object({
   phone: z.string().min(10).max(15).nullable(),
   jobTitle: z.string().min(2).max(100).nullable(),
   isFlexible: z.boolean(),
-  status: z.enum(USER_STATUS),
   joinedAt: z.date(),
   createdAt: z.date(),
 });

@@ -22,8 +22,8 @@ async function main() {
       email: 'danieltheo.73@gmail.com',
       password: await bcrypt.hash('password', 12),
       role: 'OWNER',
-      status: 'ACTIVE',
       isFlexible: true,
+      joinedAt: new Date(),
       ownedCompanies: {
         connect: {
           code: 'merpy',

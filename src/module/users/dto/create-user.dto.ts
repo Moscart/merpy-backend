@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { USER_ROLES, USER_STATUS } from 'src/module/users/constants';
+import { USER_ROLES } from 'src/module/users/constants';
 import z from 'zod';
 
 export const CreateUserSchema = z.object({
@@ -16,7 +16,7 @@ export const CreateUserSchema = z.object({
   phone: z.string().min(10).max(15).optional(),
   jobTitle: z.string().min(2).max(100).optional(),
   isFlexible: z.boolean().default(false),
-  status: z.enum(USER_STATUS).default('PENDING'),
+  joinedAt: z.coerce.date(),
 });
 
 export class CreateUserDto extends createZodDto(CreateUserSchema) {}

@@ -4,6 +4,7 @@ export interface JwtAccessPayload {
   username: string;
   email: string;
   type: 'access';
+  deviceId: string;
 }
 
 export interface JwtRefreshPayload {
@@ -22,4 +23,5 @@ export interface AuthenticatedUser {
   companyId: string;
   username: string;
   email: string;
+  deviceId: string;
 }

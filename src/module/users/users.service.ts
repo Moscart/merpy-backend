@@ -31,7 +31,6 @@ export class UsersService {
     profileUrl: true,
     jobTitle: true,
     isFlexible: true,
-    status: true,
     joinedAt: true,
     createdAt: true,
   };
@@ -106,7 +105,6 @@ export class UsersService {
         email: email,
         password: hashedPassword,
         username: username,
-        status: 'ACTIVE',
       },
       select: this.defaultSelect,
     });
@@ -114,7 +112,7 @@ export class UsersService {
   }
 
   async findAll(companyId: string, query: UserQueryDto) {
-    const { page, perPage, search, sortBy, sortOrder, role, status } = query;
+    const { page, perPage, search, sortBy, sortOrder, role } = query;
     const skip = (page - 1) * perPage;
 
     const where: Prisma.UsersWhereInput = {};
@@ -130,10 +128,6 @@ export class UsersService {
 
     if (role) {
       where.role = role;
-    }
-
-    if (status) {
-      where.status = status;
     }
 
     const activeFilters: {

@@ -136,4 +136,18 @@ export class AuthController {
     );
     return currentUser;
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    await this.authService.logout(user);
+
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+
+    return { message: 'Logged out successfully' };
+  }
 }

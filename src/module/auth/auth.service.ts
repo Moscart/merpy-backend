@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Cron } from '@nestjs/schedule';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import type { StringValue } from 'ms';
@@ -16,7 +17,11 @@ import { PrismaService } from 'src/common/database/prisma.service';
 import { ERRORS } from '../../constants/errors';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-company.dto';
-import { JwtAccessPayload, JwtRefreshPayload } from './types/jwt-payload.type';
+import {
+  AuthenticatedUser,
+  JwtAccessPayload,
+  JwtRefreshPayload,
+} from './types/jwt-payload.type';
 import { TokenResponse } from './types/token-response.type';
 
 @Injectable()
@@ -143,7 +148,7 @@ export class AuthService {
         password: await bcrypt.hash(dto.password, 10),
         role: 'OWNER',
         isFlexible: true,
-        status: 'ACTIVE',
+        joinedAt: new Date(),
         ownedCompanies: {
           connect: {
             code: dto.companyCode.toLowerCase(),
@@ -191,13 +196,13 @@ export class AuthService {
     userAgent: string,
     ipAddress: string
   ): Promise<TokenResponse> {
-    const deviceId = payload.deviceId;
+    const { sub, companyId, username, email, deviceId } = payload;
 
     const token = await this.generateTokens(
-      payload.sub,
-      payload.companyId,
-      payload.username,
-      payload.email,
+      sub,
+      companyId,
+      username,
+      email,
       deviceId
     );
 
@@ -208,7 +213,7 @@ export class AuthService {
 
     await this.prismaService.sessions.updateMany({
       where: {
-        userId: payload.sub,
+        userId: sub,
         deviceId: deviceId,
       },
       data: {
@@ -220,12 +225,29 @@ export class AuthService {
     });
 
     await this.cacheService.set(
-      `refresh_token:${payload.sub}:${deviceId}`,
+      `refresh_token:${sub}:${deviceId}`,
       refreshTokenHash,
       7 * 24 * 60 * 60
     );
 
     return token;
+  }
+
+  async logout(user: AuthenticatedUser) {
+    const { id: userId, deviceId } = user;
+
+    this.logger.debug(`User ${userId} logged out from device ${deviceId}`);
+
+    await this.prismaService.sessions.delete({
+      where: {
+        userId_deviceId: {
+          userId,
+          deviceId,
+        },
+      },
+    });
+
+    await this.cacheService.delete(`refresh_token:${userId}:${deviceId}`);
   }
 
   private async generateTokens(
@@ -241,6 +263,7 @@ export class AuthService {
       companyId,
       username,
       email,
+      deviceId,
     };
 
     const refreshTokenPayload: JwtRefreshPayload = {
@@ -249,7 +272,7 @@ export class AuthService {
       companyId,
       username,
       email,
-      deviceId: deviceId,
+      deviceId,
     };
 
     const jwtConfig = this.configService.get<JwtConfig>('jwt')!;
@@ -269,5 +292,25 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  @Cron('0 0 0 * * *')
+  async cleanUpExpiredSessions() {
+    await this.prismaService.sessions
+      .deleteMany({
+        where: {
+          expiresAt: {
+            lt: new Date(),
+          },
+        },
+      })
+      .then(({ count }) => {
+        if (count > 0) {
+          this.logger.debug(`Cleaned up ${count} expired sessions`);
+        }
+      })
+      .catch((error) => {
+        this.logger.error('Error cleaning up expired sessions', error);
+      });
   }
 }
