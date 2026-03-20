@@ -9,16 +9,19 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
+  const companyCode = 'merpy';
+  const username = 'danieltheo';
+
   const owner = await prisma.users.create({
     data: {
       company: {
         create: {
           name: 'Merpy Corporation',
-          code: 'merpy',
+          code: companyCode,
         },
       },
       fullName: 'Daniel Theo Santoso',
-      username: 'danieltheo',
+      username: username,
       email: 'danieltheo.73@gmail.com',
       password: await bcrypt.hash('password', 12),
       role: 'OWNER',
@@ -26,7 +29,7 @@ async function main() {
       joinedAt: new Date(),
       ownedCompanies: {
         connect: {
-          code: 'merpy',
+          code: companyCode,
         },
       },
     },

@@ -236,8 +236,6 @@ export class AuthService {
   async logout(user: AuthenticatedUser) {
     const { id: userId, deviceId } = user;
 
-    this.logger.debug(`User ${userId} logged out from device ${deviceId}`);
-
     await this.prismaService.sessions.delete({
       where: {
         userId_deviceId: {

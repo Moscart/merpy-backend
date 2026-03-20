@@ -195,11 +195,25 @@ export class UsersService {
       where: { id, companyId, deletedAt: null },
       select: this.defaultSelect,
     });
+
+    if (!user)
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        errorCode: Object.keys(ERRORS).find(
+          (key) => ERRORS[key] === ERRORS.USER_NOT_FOUND
+        ),
+        message: ERRORS.USER_NOT_FOUND,
+      });
+
     return user;
   }
 
   async update(companyId: string, id: string, updateUserDto: UpdateUserDto) {
-    const getUser = await this.prismaService.users.findFirst({
+    const { employeeCode, password } = updateUserDto;
+    const email = updateUserDto.email?.toLowerCase();
+    const username = updateUserDto.username?.toLowerCase();
+
+    const user = await this.prismaService.users.findFirst({
       where: {
         id,
         companyId,
@@ -207,7 +221,7 @@ export class UsersService {
       },
     });
 
-    if (!getUser) {
+    if (!user) {
       throw new NotFoundException({
         statusCode: HttpStatus.NOT_FOUND,
         errorCode: Object.keys(ERRORS).find(
@@ -217,11 +231,10 @@ export class UsersService {
       });
     }
 
-    if (updateUserDto.email) {
-      const email = updateUserDto.email.toLowerCase();
+    if (email) {
       const isUserEmailExist = await this.prismaService.users.findFirst({
         where: {
-          companyId: getUser.companyId,
+          companyId: user.companyId,
           email: email,
           deletedAt: null,
           NOT: {
@@ -241,11 +254,10 @@ export class UsersService {
       }
     }
 
-    if (updateUserDto.username) {
-      const username = updateUserDto.username.toLowerCase();
+    if (username) {
       const isUserUsernameExist = await this.prismaService.users.findFirst({
         where: {
-          companyId: getUser.companyId,
+          companyId: user.companyId,
           username: username,
           deletedAt: null,
           NOT: {
@@ -265,11 +277,11 @@ export class UsersService {
       }
     }
 
-    if (updateUserDto.employeeCode) {
+    if (employeeCode) {
       const isUserEmployeeCodeExist = await this.prismaService.users.findFirst({
         where: {
-          companyId: getUser.companyId,
-          employeeCode: updateUserDto.employeeCode,
+          companyId: user.companyId,
+          employeeCode: employeeCode,
           deletedAt: null,
           NOT: {
             id: id,
@@ -288,11 +300,14 @@ export class UsersService {
       }
     }
 
-    const updateData = { ...updateUserDto };
+    const updateData: Prisma.UsersUpdateInput = {
+      ...updateUserDto,
+      email,
+      username,
+    };
 
-    // Hash password if the user wants to update it
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 12);
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 12);
     }
 
     const updatedUser = await this.prismaService.users.update({
@@ -304,7 +319,7 @@ export class UsersService {
   }
 
   async remove(companyId: string, id: string) {
-    const getUser = await this.prismaService.users.findFirst({
+    const user = await this.prismaService.users.findFirst({
       where: {
         id,
         companyId,
@@ -312,7 +327,7 @@ export class UsersService {
       },
     });
 
-    if (!getUser) {
+    if (!user) {
       throw new NotFoundException({
         statusCode: HttpStatus.NOT_FOUND,
         errorCode: Object.keys(ERRORS).find(

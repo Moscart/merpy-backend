@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { IdParamDto } from 'src/common/dto/id-param.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -51,24 +52,24 @@ export class UsersController {
   @Get(':id')
   @Roles('OWNER', 'HR')
   @ZodSerializerDto(UserResponseDto)
-  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.usersService.findOne(user.companyId, id);
+  findOne(@Param() params: IdParamDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.findOne(user.companyId, params.id);
   }
 
   @Patch(':id')
   @Roles('OWNER', 'HR')
   @ZodSerializerDto(UserResponseDto)
   update(
-    @Param('id') id: string,
+    @Param() params: IdParamDto,
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() user: AuthenticatedUser
   ) {
-    return this.usersService.update(user.companyId, id, updateUserDto);
+    return this.usersService.update(user.companyId, params.id, updateUserDto);
   }
 
   @Delete(':id')
   @Roles('OWNER', 'HR')
-  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.usersService.remove(user.companyId, id);
+  remove(@Param() params: IdParamDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.remove(user.companyId, params.id);
   }
 }

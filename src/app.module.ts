@@ -8,6 +8,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { AuthModule } from './module/auth/auth.module';
 import { SessionsModule } from './module/sessions/sessions.module';
 import { UsersModule } from './module/users/users.module';
+import { DepartmentsModule } from './module/departments/departments.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from './module/users/users.module';
     SessionsModule,
     UsersModule,
     ScheduleModule.forRoot(),
+    DepartmentsModule,
   ],
   controllers: [],
   providers: [

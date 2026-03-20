@@ -18,4 +18,9 @@ export const ERRORS = {
   USERNAME_ALREADY_EXISTS: 'User with this username already exists',
   EMAIL_ALREADY_EXISTS: 'User with this email already exists',
   EMPLOYEE_CODE_ALREADY_EXISTS: 'User with this employee code already exists',
+
+  // Departments
+  MANAGER_NOT_FOUND: 'Manager not found',
+  DEPARTMENT_CODE_ALREADY_EXISTS: 'Department with this code already exists',
+  DEPARTMENT_NOT_FOUND: 'Department not found',
 };

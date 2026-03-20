@@ -51,8 +51,6 @@ export class RolesGuard implements CanActivate {
     const cacheKey = `user:${user.companyId}:${user.id}:role`;
     let userRole = await this.cacheService.get(cacheKey);
 
-    this.logger.debug(`${userRole}`);
-
     if (!userRole) {
       const dbUser = await this.prismaService.users.findUnique({
         where: { id: user.id },
