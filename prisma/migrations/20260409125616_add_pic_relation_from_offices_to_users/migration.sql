@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE "Offices" ADD CONSTRAINT "Offices_picId_fkey" FOREIGN KEY ("picId") REFERENCES "Users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -69,6 +69,7 @@ model Users {
   attendances         Attendances[]
   attendanceRequests  AttendanceRequests[] @relation("UserAttendanceRequests")
   reviewedAttendances AttendanceRequests[] @relation("AttendanceRequestReviewer")
+  offices             Offices[]            @relation("OfficePIC")
 
   @@unique([companyId, employeeCode])
   @@unique([companyId, username])
@@ -106,6 +107,8 @@ model Offices {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
+
+  pic Users? @relation("OfficePIC", fields: [picId], references: [id])
 
   users              Users[]              @relation("OfficeUser")
   attendances        Attendances[]
@@ -234,7 +237,6 @@ model ScheduleDays {
   dayOfWeek  DayOfWeek
   clockIn    DateTime  @db.Time()
   clockOut   DateTime  @db.Time()
-  isOff      Boolean   @default(false)
 
   schedule Schedules @relation(fields: [scheduleId], references: [id])
 
