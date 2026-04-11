@@ -6,9 +6,10 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { CommonModule } from './common/common.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AuthModule } from './module/auth/auth.module';
+import { DepartmentsModule } from './module/departments/departments.module';
+import { OfficesModule } from './module/offices/offices.module';
 import { SessionsModule } from './module/sessions/sessions.module';
 import { UsersModule } from './module/users/users.module';
-import { DepartmentsModule } from './module/departments/departments.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DepartmentsModule } from './module/departments/departments.module';
     UsersModule,
     ScheduleModule.forRoot(),
     DepartmentsModule,
+    OfficesModule,
   ],
   controllers: [],
   providers: [

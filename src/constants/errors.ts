@@ -23,4 +23,9 @@ export const ERRORS = {
   MANAGER_NOT_FOUND: 'Manager not found',
   DEPARTMENT_CODE_ALREADY_EXISTS: 'Department with this code already exists',
   DEPARTMENT_NOT_FOUND: 'Department not found',
+
+  // Offices
+  PIC_NOT_FOUND: 'Person in charge not found',
+  OFFICE_CODE_ALREADY_EXISTS: 'Office with this code already exists',
+  OFFICE_NOT_FOUND: 'Office not found',
 };
