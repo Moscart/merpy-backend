@@ -8,6 +8,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { AuthModule } from './module/auth/auth.module';
 import { DepartmentsModule } from './module/departments/departments.module';
 import { OfficesModule } from './module/offices/offices.module';
+import { SchedulesModule } from './module/schedules/schedules.module';
 import { SessionsModule } from './module/sessions/sessions.module';
 import { UsersModule } from './module/users/users.module';
 
@@ -20,6 +21,7 @@ import { UsersModule } from './module/users/users.module';
     ScheduleModule.forRoot(),
     DepartmentsModule,
     OfficesModule,
+    SchedulesModule,
   ],
   controllers: [],
   providers: [

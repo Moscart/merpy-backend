@@ -28,4 +28,8 @@ export const ERRORS = {
   PIC_NOT_FOUND: 'Person in charge not found',
   OFFICE_CODE_ALREADY_EXISTS: 'Office with this code already exists',
   OFFICE_NOT_FOUND: 'Office not found',
+
+  // Schedules
+  SCHEDULE_NOT_FOUND: 'Schedule not found',
+  SCHEDULE_IN_USE: 'Schedule is still in use and cannot be deleted',
 };
