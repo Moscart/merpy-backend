@@ -32,4 +32,10 @@ export const ERRORS = {
   // Schedules
   SCHEDULE_NOT_FOUND: 'Schedule not found',
   SCHEDULE_IN_USE: 'Schedule is still in use and cannot be deleted',
+
+  // Special Dates
+  SPECIAL_DATE_NOT_FOUND: 'Special date not found',
+  SPECIAL_DATE_ALREADY_EXISTS: 'Special date already exists',
+  INVALID_SPECIAL_DATE_TIME_CONFIGURATION:
+    'Invalid special date time configuration',
 };

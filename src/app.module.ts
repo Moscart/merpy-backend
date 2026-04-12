@@ -10,6 +10,7 @@ import { DepartmentsModule } from './module/departments/departments.module';
 import { OfficesModule } from './module/offices/offices.module';
 import { SchedulesModule } from './module/schedules/schedules.module';
 import { SessionsModule } from './module/sessions/sessions.module';
+import { SpecialDatesModule } from './module/special-dates/special-dates.module';
 import { UsersModule } from './module/users/users.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { UsersModule } from './module/users/users.module';
     DepartmentsModule,
     OfficesModule,
     SchedulesModule,
+    SpecialDatesModule,
   ],
   controllers: [],
   providers: [
